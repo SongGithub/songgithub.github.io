@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Song's blog - linux</title><link href="https://blog.midu.com.au/" rel="alternate"></link><link href="https://blog.midu.com.au/feeds/linux.atom.xml" rel="self"></link><id>https://blog.midu.com.au/</id><updated>2019-03-22T22:35:00+11:00</updated><entry><title>How to set correct resolution on Ubuntu 18.04 LTS</title><link href="https://blog.midu.com.au/posts/2019-03/ubuntu-resolution/" rel="alternate"></link><published>2019-03-22T22:35:00+11:00</published><updated>2019-03-22T22:35:00+11:00</updated><author><name>Song.Jin</name></author><id>tag:blog.midu.com.au,2019-03-22:/posts/2019-03/ubuntu-resolution/</id><summary type="html">&lt;p&gt;how I setup correct resolution for my Ubuntu&lt;/p&gt;</summary><content type="html">&lt;h1&gt;Why writing this&lt;/h1&gt;
+&lt;p&gt;I want to run Ubuntu on my Lenovo laptop with a 2560x1440@60Hz monitor. But there is
+no such resolution in Display setting's resolution list.&lt;/p&gt;
+&lt;p&gt;And I went through many online articles. finally I found one method works for me&lt;/p&gt;
+&lt;h1&gt;The code&lt;/h1&gt;
+&lt;p&gt;modelline is the string I got after run &lt;code&gt;umc 2560 1440 55 --rbt&lt;/code&gt;&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env bash&lt;/span&gt;
+
+&lt;span class="nv"&gt;outlet&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;xrandr &lt;span class="p"&gt;|&lt;/span&gt; grep &lt;span class="s1"&gt;&amp;#39;connected primary&amp;#39;&lt;/span&gt; &lt;span class="p"&gt;|&lt;/span&gt; awk &lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;print $1&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;)&lt;/span&gt;
+
+&lt;span class="nv"&gt;modelline&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;quot;2560x1440x54.97&amp;quot; 221.000000 2560 2608 2640 2720  1440 1443 1447 1478  +HSync -VSync&amp;#39;&lt;/span&gt;
+
+&lt;span class="nv"&gt;model&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$modelline&lt;/span&gt; &lt;span class="p"&gt;|&lt;/span&gt; awk &lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;print $1&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt;
+
+xrandr --newmode &lt;span class="nv"&gt;$modelline&lt;/span&gt;
+
+xrandr --addmode &lt;span class="nv"&gt;$outlet&lt;/span&gt; &lt;span class="nv"&gt;$model&lt;/span&gt;
+
+xrandr --output &lt;span class="nv"&gt;$outlet&lt;/span&gt; --mode &lt;span class="nv"&gt;$model&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+
+&lt;h1&gt;The trick I found the hard way&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;cvt&lt;/code&gt; command that everyone is talking, is not really working in my case, instead &lt;code&gt;umc&lt;/code&gt; works like a charm!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;do not let frequency very high, or you would have blinky screen! I would tweak the frequency number such as the 55 in &lt;code&gt;umc 2560 1440 55 --rbt&lt;/code&gt;, so that I can see resulting frequency is 221MHz which ensures a stable display.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content><category term="ubuntu resolution"></category></entry></feed>

@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Song's blog</title><link href="https://blog.midu.com.au/" rel="alternate"></link><link href="https://blog.midu.com.au/feeds/all-en.atom.xml" rel="self"></link><id>https://blog.midu.com.au/</id><updated>2019-10-30T16:01:00+11:00</updated><entry><title>Survival guide when working behind company proxy - Docker</title><link href="https://blog.midu.com.au/posts/2019-10/survive-proxy-docker/" rel="alternate"></link><published>2019-10-30T16:01:00+11:00</published><updated>2019-10-30T16:01:00+11:00</updated><author><name>Song.Jin</name></author><id>tag:blog.midu.com.au,2019-10-30:/posts/2019-10/survive-proxy-docker/</id><summary type="html">&lt;p&gt;a guide to work with company proxy&lt;/p&gt;</summary><content type="html">&lt;h2&gt;the story&lt;/h2&gt;
+&lt;p&gt;I was trying to login to AWS ECR from a machine inside company proxy. Out of
+blue, I got time-out error!&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Error response from daemon: Get https://aws-account.dkr.ecr.... request cancelled
+while waiting for connection (Client.Timeout exceeded while waiting for headers)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;the explore&lt;/h2&gt;
+&lt;p&gt;From my experience, it is comming from company proxy which blocks your network
+traffic quietly again. But problem is most of Google-search results suggest to
+reconfig &lt;em&gt;systemd&lt;/em&gt; which is not available to my machine( it doesn't have it, and
+I can't install it)&lt;/p&gt;
+&lt;h2&gt;the solution&lt;/h2&gt;
+&lt;p&gt;Let cut to the cheese. Assuming you have root permission to the machine,&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;add proxy settings to &lt;code&gt;/etc/sysconfig/docker&lt;/code&gt; file.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo su -
+echo &amp;#39;export http_proxy=http://&amp;lt;company-proxy:proxy-port&amp;gt;&amp;#39; &amp;gt;&amp;gt; /etc/sysconfig/docker
+echo &amp;#39;export https_proxy=http://&amp;lt;company-proxy:proxy-port&amp;gt;&amp;#39; &amp;gt;&amp;gt; /etc/sysconfig/docker
+echo &amp;#39;export no_proxy=[list-of-internal-domains]&amp;#39; &amp;gt;&amp;gt; /etc/sysconfig/docker
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;restart docker daemon
+&lt;code&gt;sudo service docker restart&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;prove if you could run Docker login command correctly, response should be &lt;em&gt;Login succeed&lt;/em&gt;
+&lt;code&gt;$(aws ecr get-login --no-include-email)&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;the traps&lt;/h2&gt;
+&lt;p&gt;I feel it is nice to share traps I fell into, so that you wouldn't experience
+the same pain I have been through.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;no_proxy should contain company internal domains, and no more. Those domains
+that are behind company firewall should be here, but anything else should go
+through the forwardproxy.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It is good to align your tools with what are popular on the market. If I used
+any AMIs that contains &lt;em&gt;systemd&lt;/em&gt;, I could have copy&amp;amp;paste solution from the first
+Google search result for this error message. The AMI I used is Amazon 1, which
+doesn't have &lt;em&gt;systemd&lt;/em&gt;. So if I do it again, I would just pick an AMI shipped with
+&lt;em&gt;systemd&lt;/em&gt; which is popular on the Internet.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content><category term="devops"></category></entry><entry><title>How to set correct resolution on Ubuntu 18.04 LTS</title><link href="https://blog.midu.com.au/posts/2019-03/ubuntu-resolution/" rel="alternate"></link><published>2019-03-22T22:35:00+11:00</published><updated>2019-03-22T22:35:00+11:00</updated><author><name>Song.Jin</name></author><id>tag:blog.midu.com.au,2019-03-22:/posts/2019-03/ubuntu-resolution/</id><summary type="html">&lt;p&gt;how I setup correct resolution for my Ubuntu&lt;/p&gt;</summary><content type="html">&lt;h1&gt;Why writing this&lt;/h1&gt;
+&lt;p&gt;I want to run Ubuntu on my Lenovo laptop with a 2560x1440@60Hz monitor. But there is
+no such resolution in Display setting's resolution list.&lt;/p&gt;
+&lt;p&gt;And I went through many online articles. finally I found one method works for me&lt;/p&gt;
+&lt;h1&gt;The code&lt;/h1&gt;
+&lt;p&gt;modelline is the string I got after run &lt;code&gt;umc 2560 1440 55 --rbt&lt;/code&gt;&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env bash&lt;/span&gt;
+
+&lt;span class="nv"&gt;outlet&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;xrandr &lt;span class="p"&gt;|&lt;/span&gt; grep &lt;span class="s1"&gt;&amp;#39;connected primary&amp;#39;&lt;/span&gt; &lt;span class="p"&gt;|&lt;/span&gt; awk &lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;print $1&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;)&lt;/span&gt;
+
+&lt;span class="nv"&gt;modelline&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;quot;2560x1440x54.97&amp;quot; 221.000000 2560 2608 2640 2720  1440 1443 1447 1478  +HSync -VSync&amp;#39;&lt;/span&gt;
+
+&lt;span class="nv"&gt;model&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$modelline&lt;/span&gt; &lt;span class="p"&gt;|&lt;/span&gt; awk &lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;print $1&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt;
+
+xrandr --newmode &lt;span class="nv"&gt;$modelline&lt;/span&gt;
+
+xrandr --addmode &lt;span class="nv"&gt;$outlet&lt;/span&gt; &lt;span class="nv"&gt;$model&lt;/span&gt;
+
+xrandr --output &lt;span class="nv"&gt;$outlet&lt;/span&gt; --mode &lt;span class="nv"&gt;$model&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+
+&lt;h1&gt;The trick I found the hard way&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;cvt&lt;/code&gt; command that everyone is talking, is not really working in my case, instead &lt;code&gt;umc&lt;/code&gt; works like a charm!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;do not let frequency very high, or you would have blinky screen! I would tweak the frequency number such as the 55 in &lt;code&gt;umc 2560 1440 55 --rbt&lt;/code&gt;, so that I can see resulting frequency is 221MHz which ensures a stable display.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content><category term="ubuntu resolution"></category></entry><entry><title>Kubernetes Apiserver latency alert with Prometheus</title><link href="https://blog.midu.com.au/posts/2018-09/apiserver-prom-alert/" rel="alternate"></link><published>2018-09-22T14:35:00+10:00</published><updated>2018-09-22T14:35:00+10:00</updated><author><name>Song.Jin</name></author><id>tag:blog.midu.com.au,2018-09-22:/posts/2018-09/apiserver-prom-alert/</id><summary type="html">&lt;p&gt;how I setup alert for kubernetes apiserver high latency&lt;/p&gt;</summary><content type="html">&lt;blockquote&gt;
+&lt;p&gt;Good devops engineers won't let anyone else to tell them that your systems have problems.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;My team has realised it the hard way that the apiserver and the etcd module
+behind it has limited resource to deal with objects inside Kubernetes. For
+example, if one of your program trying to query large amount of objects, apiserver
+and the etcd module will freak out. As a result, all apiserver users would
+experience very long response time. Good devops engineers won't let anyone
+else to tell them that your systems have problems.
+That is why I am trying to add an alert for such events.&lt;/p&gt;
+&lt;h2&gt;Problem break down&lt;/h2&gt;
+&lt;p&gt;While it is true that there are delays from network component even the operators
+laptop, we can only monitor objective metrics scaped from server. Please be aware
+the trade-off here is that we are ignoring a part of high latency perceived by
+users: non-server related delays.&lt;/p&gt;
+&lt;p&gt;In Prometheus, there are 2 ways we can monitor. One is tracking
+absulte value of the latency, the other is finding increase rate of it.&lt;/p&gt;
+&lt;h2&gt;My 1st failed attempt&lt;/h2&gt;
+&lt;p&gt;In my first attempt, I tried a metric &lt;code&gt;apiserver_request_latencies_summary&lt;/code&gt;.
+Good thing about it is that the metric shows an absolute value in mirco seconds.
+However, it is not very suitable for a responsive alerting system. The metric
+summarises data from a sliding window upto 5 hours. So if your system has been
+okey, then suddenly went bad. The high rate of latency won't be picked up until
+very long time later that averaged value of the past 5 hours has crossed your
+set threshold. The delay in alerting could be upto 1.5 hours, and alert won't
+cool down until same delay time past actual end of the incident. Alert setting
+in PromQL:
+&lt;code&gt;avg_over_time(apiserver_request_latencies_summary{job="kubernetes-apiservers", verb!~"WATCH|CONNECT", quantile="0.9"}[5m]) / 1000 &amp;gt; 3000&lt;/code&gt;&lt;/p&gt;
+&lt;h2&gt;My 2nd attempt&lt;/h2&gt;
+&lt;p&gt;As an improvement to the above alert, I found a project on Github called
+&lt;code&gt;Prometheus Operator&lt;/code&gt;. One of their &lt;em&gt;rules&lt;/em&gt; uses metric
+ &lt;code&gt;apiserver_request_latencies_bucket&lt;/code&gt;, then visualise it with &lt;code&gt;histogram_quantile&lt;/code&gt;
+The query makes the alert very responsive to sudden surge of apiserver latency.
+&lt;code&gt;avg by(resource, verb) (histogram_quantile(0.95, rate(apiserver_request_latencies_bucket{verb!~"^(?:WATCH|CONNECT)$"}[5m])) / 1e+06 &amp;gt; 0) &amp;gt; 1&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;In the mentioned &lt;em&gt;rules&lt;/em&gt;, thresholds were set to &amp;gt;1:warning, and &amp;gt;4:critical&lt;/p&gt;
+&lt;h2&gt;Personal reflection&lt;/h2&gt;
+&lt;p&gt;External factors make it harder for me to work on this task. First is lack of
+proper documentation about the metrics. Not finding any offical documentation,
+I had to dig down to source code, only to find a few inline code comments helping
+make sence of the metrics. But when I came back to Prometheus, what? Metrics in
+source code has different names here, and some metrics here can't be found in
+source code.&lt;/p&gt;
+&lt;p&gt;Another thought is that the high-latency scenario needs some effort to re-produce
+in order to test your alert. For my case, my team came up with this code to create
+huge amount of objects to query which will lead to high latency. You would need
+to generate at least 7 thousand objects to execrise apiserver capability.&lt;/p&gt;
+&lt;p&gt;Final thoughs are:
+- why sudden surge of objects could happen
+- could we have pagination at apiserver level or at etcd level?
+- could performance optimisation help? such as, using high IOPS instance for etcd.&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env bash&lt;/span&gt;
+ &lt;span class="nb"&gt;set&lt;/span&gt; -e
+ &lt;span class="nv"&gt;counter&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;
+&lt;span class="k"&gt;while&lt;/span&gt; true&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt;
+       &lt;span class="nv"&gt;counter&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="k"&gt;$((&lt;/span&gt;counter+1&lt;span class="k"&gt;))&lt;/span&gt;
+       sleep &lt;span class="m"&gt;0&lt;/span&gt;.1
+       cat config-map.yaml&lt;span class="p"&gt;|&lt;/span&gt; sed s/&lt;span class="se"&gt;\$&lt;/span&gt;INDEX/&lt;span class="nv"&gt;$RANDOM&lt;/span&gt;/g &lt;span class="p"&gt;|&lt;/span&gt; kubectl apply -f - &amp;gt; /dev/null &lt;span class="p"&gt;&amp;amp;&lt;/span&gt;
+       &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[[&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="nv"&gt;$counter&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; -gt &lt;span class="m"&gt;30000&lt;/span&gt; &lt;span class="o"&gt;]]&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="k"&gt;then&lt;/span&gt;
+         &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;Counter: &lt;/span&gt;&lt;span class="nv"&gt;$counter&lt;/span&gt;&lt;span class="s2"&gt; times reached; Exiting loop!&amp;quot;&lt;/span&gt;
+         &lt;span class="nb"&gt;exit&lt;/span&gt; &lt;span class="m"&gt;1&lt;/span&gt;
+       &lt;span class="k"&gt;fi&lt;/span&gt;
+&lt;span class="k"&gt;done&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+
+&lt;p&gt;&lt;em&gt;config-map.yaml&lt;/em&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: prometheus
+    component: server
+    repo: ops-kube-system
+    deployed-with: kt
+    owner: songjin
+  name: test-cm-$INDEX
+  namespace: kube-system
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Summary&lt;/h2&gt;
+&lt;p&gt;Hopefully you can learn from my journey above, and save some struggle.&lt;/p&gt;</content><category term="devops"></category></entry><entry><title>My reading list</title><link href="https://blog.midu.com.au/posts/2018-06/read-list/" rel="alternate"></link><published>2018-06-04T21:28:00+10:00</published><updated>2018-06-04T21:28:00+10:00</updated><author><name>Song.Jin</name></author><id>tag:blog.midu.com.au,2018-06-04:/posts/2018-06/read-list/</id><summary type="html">&lt;p&gt;My reading list&lt;/p&gt;</summary><content type="html">&lt;h2&gt;general&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Apprenticeship Patterns&lt;/strong&gt; It is for anyone who want to improve their skills
+and mindset which lead to those improvements. Not only for Juniors, for sure.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;programming&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The Go programming language. I have been blown away by the good ideas in the book.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;kubernetes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Kubernetes up and running&lt;/strong&gt; The book is great for new starters to get up to
+speed of k8s administration&lt;/li&gt;
+&lt;/ul&gt;</content><category term="devops"></category></entry><entry><title>CICD with PelicanBlog</title><link href="https://blog.midu.com.au/posts/2018-05/cicd-pelicanblog/" rel="alternate"></link><published>2018-05-23T00:00:00+10:00</published><updated>2018-05-23T00:00:00+10:00</updated><author><name>Song.Jin</name></author><id>tag:blog.midu.com.au,2018-05-23:/posts/2018-05/cicd-pelicanblog/</id><summary type="html">&lt;p&gt;how I build this blog&lt;/p&gt;</summary><content type="html">&lt;p&gt;Back in time, I knew PelicanBlog was a Python module that can generate static
+website for me, as well as GithubPages was a good place to host the static website
+generated.&lt;/p&gt;
+&lt;p&gt;But the pain was I had to compile and update content manually, every and each time.&lt;/p&gt;
+&lt;p&gt;This time, I decide to automate this bit!&lt;/p&gt;
+&lt;h2&gt;how it is setup&lt;/h2&gt;
+&lt;p&gt;Key components of this blog include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a Github repo containing &lt;a href="https://github.com/SongGithub/songgithub.github.io-src"&gt;source code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;another Github repo containing &lt;a href="https://github.com/SongGithub/songgithub.github.io"&gt;compiled static web files&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;a CICD &lt;a href="https://travis-ci.org/SongGithub/songgithub.github.io-src"&gt;pipeline&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;a &lt;a href="https://blog.getpelican.com/"&gt;static site generator&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;a domain provider to get you custom URL, instead of generic site URL like foo.github.io&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;challenges&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;how the CI agent get permission to write code to one of my repos ?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I considered solutions such as SSH keys, Github personal token. SSH key didn't
+get to my final thoughts because it is complicated to setup. You need to generate
+a pair of keys, embed the Pub key in the repo, then ensure your CI agent has got
+the private key and added to current ssh-agent. And repeat yourself this process
+for other repos. Even though Github personal access token may have too much power
+over my other repos that are not relevant to the project, I still think it is
+overall better solution. Because it is simple, thus less error prone.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;given CI has got permission to write back to repos, how to carry out the task ?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;It has been my trick that one can easily do stuff with permissions originated
+from the Github personal access token, by simply ensure &lt;em&gt;origin's&lt;/em&gt; url is using
+HTTPS, and have the token embeded like so
+&lt;code&gt;https://&amp;lt;your-token&amp;gt;@github.com/&amp;lt;repo-owner&amp;gt;/&amp;lt;repo-name&amp;gt;.git&lt;/code&gt;
+It can't be simpler than that!&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;how to have a faster feedback loop&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A valid fast feedback loop should be its environment as similar as possible to
+the one that is running on the server. One great tool is Docker which helps to
+isolate your dependencies, and make it more repeatable on the server, and less
+surprise that &lt;em&gt;"but it works on my laptop, why?"&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Another point will be having source code separated from configuration as much as
+possible. So when you see someone put those configurable variables into source code,
+you would realise it has this kind of weakness, hence it is hard to debug.&lt;/p&gt;
+&lt;p&gt;Lastly, for this particular project, local dev server makes getting feedbacks quickly.
+The &lt;strong&gt;Pelican&lt;/strong&gt; can compile my source code in Markdown files and stylesheets the same
+way as it would do on the server. So I can tweak the website as frequent as
+several times a minute.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;how to have a robust build solution, not a flaky solution?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That was one of my lesson here. I read an article online that uses Github
+submodule embeded in source code. I learned it the hardway that if you use something
+in way that it is not suppose to do, be aware of hidden gotchas. The submodule
+in this case, make it very compicated to run simple &lt;code&gt;git push/checkout&lt;/code&gt;. Because it
+is made to &lt;em&gt;read&lt;/em&gt; code from a commit.&lt;/p&gt;</content><category term="devops"></category></entry><entry><title>1 yr anniversary with Kubernetes</title><link href="https://blog.midu.com.au/posts/2018-05/1-yr-k8s/" rel="alternate"></link><published>2018-05-22T16:01:00+10:00</published><updated>2018-05-22T16:01:00+10:00</updated><author><name>Song.Jin</name></author><id>tag:blog.midu.com.au,2018-05-22:/posts/2018-05/1-yr-k8s/</id><summary type="html">&lt;p&gt;1 yr anniversary with k8s&lt;/p&gt;</summary><content type="html">&lt;p&gt;I joined a company that builds its platform with Kubernetes last year this time.
+I have since amazed how much this technology can help Developers and the Company!&lt;/p&gt;
+&lt;h2&gt;Its benefits:&lt;/h2&gt;
+&lt;h3&gt;It saves time from developers to deploy&lt;/h3&gt;
+&lt;p&gt;Developers do not need to worry about infrastructure running their workloads, as well
+as alerting and monitoring. All they need to know now, is how to write simple
+Kubernetes config yaml files with help from our team.&lt;/p&gt;
+&lt;h3&gt;It improves software development mentality&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Immutable infrastruture&lt;/li&gt;
+&lt;li&gt;Immutable workload.&lt;/li&gt;
+&lt;li&gt;Docker images as artifacts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Before, developers liked to maintain a long running machine which is special. Time
+spent on manually configure them was an investment. So when something fails, the
+person on call need to jump into the Server, spending time to resolve the problem.&lt;/p&gt;
+&lt;p&gt;Now, they don't need to and they can't do that anymore with Dockerised app running
+on Kubernetes cluster.&lt;/p&gt;
+&lt;h2&gt;I have improved myself since then&lt;/h2&gt;
+&lt;p&gt;There are people skills, tech skills, as well as table tennis skills gained in
+ a large enterprise in Australia.&lt;/p&gt;
+&lt;p&gt;From technical perspective, I try to reduce my gap with some top-of-range
+develoeprs I work with. In particular, is about to find root cause of a problem
+with existing skills and knowledge.&lt;/p&gt;
+&lt;p&gt;From sports perspective, I do enjoy plays and a sense of craftmanship in
+table tennis skills. That is, never stop to refine your skills in an area.
+It is called Kaizen by Toyota people.&lt;/p&gt;</content><category term="devops"></category></entry></feed>
